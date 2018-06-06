@@ -1,5 +1,6 @@
 <?php
-use Phinx\Migration\AbstractMigration;
+
+use Migrations\AbstractMigration;
 
 class CreateAuditDeltas extends AbstractMigration
 {
@@ -8,13 +9,14 @@ class CreateAuditDeltas extends AbstractMigration
      *
      * More information on this method is available here:
      * http://docs.phinx.org/en/latest/migrations.html#the-change-method
+     *
      * @return void
      */
     public function change()
     {
         $table = $this->table('audit_deltas', [
             'id' => false,
-            'primary_key' => ['id']
+            'primary_key' => ['id'],
         ]);
 
         $table->addColumn('id', 'uuid', [

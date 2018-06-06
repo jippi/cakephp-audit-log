@@ -1,7 +1,10 @@
 <?php
+
 namespace AuditLog\Test\App\Model\Entity;
 
-class Article extends \Cake\ORM\Entity
+use Cake\ORM\Entity;
+
+class Article extends Entity
 {
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
@@ -16,6 +19,6 @@ class Article extends \Cake\ORM\Entity
         'published' => true,
         'ignored_field' => true,
         'author' => true,
-        'tags' => true
+        'tags' => true,
     ];
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace AuditLog\Test\Fixture;
 
 use Cake\TestSuite\Fixture\TestFixture;
@@ -25,14 +26,10 @@ class ArticlesFixture extends TestFixture
         'published' => ['type' => 'string', 'fixed' => true, 'length' => 1, 'null' => false, 'default' => 'N', 'comment' => '', 'precision' => null],
         'ignored_field' => ['type' => 'integer', 'length' => 1, 'unsigned' => true, 'null' => false, 'default' => '0', 'comment' => '', 'precision' => null, 'autoIncrement' => null],
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
-        'updated' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
+        'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
 
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],
-        ],
-        '_options' => [
-            'engine' => 'InnoDB',
-            'collation' => 'utf8_general_ci'
         ],
     ];
     // @codingStandardsIgnoreEnd
@@ -50,7 +47,7 @@ class ArticlesFixture extends TestFixture
             'body' => 'First Article Body',
             'published' => 'Y',
             'created' => '2007-03-18 10:39:23',
-            'updated' => '2007-03-18 10:41:31'
+            'updated' => '2007-03-18 10:41:31',
         ],
         [
             'user_id' => 3,
@@ -59,7 +56,7 @@ class ArticlesFixture extends TestFixture
             'body' => 'Second Article Body',
             'published' => 'Y',
             'created' => '2007-03-18 10:41:23',
-            'updated' => '2007-03-18 10:43:31'
+            'updated' => '2007-03-18 10:43:31',
         ],
         [
             'user_id' => 1,
@@ -68,7 +65,7 @@ class ArticlesFixture extends TestFixture
             'body' => 'Third Article Body',
             'published' => 'Y',
             'created' => '2007-03-18 10:43:23',
-            'updated' => '2007-03-18 10:45:31'
-        ]
+            'updated' => '2007-03-18 10:45:31',
+        ],
     ];
 }

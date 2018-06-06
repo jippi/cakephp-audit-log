@@ -2,6 +2,7 @@
 namespace AuditLog\Test\TestCase\Model\Table;
 
 use AuditLog\Model\Table\AuditDeltasTable;
+use Cake\ORM\Locator\TableLocator;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
@@ -12,13 +13,20 @@ class AuditDeltasTableTest extends TestCase
 {
 
     /**
+     * Test subject
+     *
+     * @var \AuditLog\Model\Table\AuditDeltasTable
+     */
+    public $AuditDeltas;
+
+    /**
      * Fixtures
      *
      * @var array
      */
     public $fixtures = [
         'plugin.audit_log.audit_deltas',
-        'plugin.audit_log.audits',
+        'plugin.audit_log.audits'
     ];
 
     /**
@@ -29,8 +37,9 @@ class AuditDeltasTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::exists('AuditDeltas') ? [] : ['className' => 'AuditLog\Model\Table\AuditDeltasTable'];
-        $this->AuditDeltas = TableRegistry::get('AuditDeltas', $config);
+        $tableLocator = new TableLocator();
+        $config = $tableLocator->exists('AuditDeltas') ? [] : ['className' => 'AuditLog\Model\Table\AuditDeltasTable'];
+        $this->AuditDeltas = $tableLocator->get('AuditDeltas', $config);
     }
 
     /**
@@ -56,21 +65,11 @@ class AuditDeltasTableTest extends TestCase
     }
 
     /**
-     * Test validationDefault method
+     * Test setupSearchPlugin method
      *
      * @return void
      */
-    public function testValidationDefault()
-    {
-        $this->markTestIncomplete('Not implemented yet.');
-    }
-
-    /**
-     * Test buildRules method
-     *
-     * @return void
-     */
-    public function testBuildRules()
+    public function testSetupSearchPlugin()
     {
         $this->markTestIncomplete('Not implemented yet.');
     }

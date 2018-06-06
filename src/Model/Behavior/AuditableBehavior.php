@@ -4,11 +4,11 @@ namespace AuditLog\Model\Behavior;
 use Cake\Event\Event;
 use Cake\ORM\Behavior;
 use Cake\ORM\Entity;
-use Cake\ORM\Table;
+use Cake\ORM\Locator\TableLocator;
 use Cake\ORM\TableRegistry;
 use Cake\Core\Configure;
 use Cake\Utility\Inflector;
-use Cake\Utility\Hash;
+
 /**
  * Auditable behavior
  */
@@ -23,7 +23,7 @@ class AuditableBehavior extends Behavior
     protected $_defaultConfig = [
         'on' => ['delete', 'create', 'update'],
         'ignore' => ['created', 'updated', 'modified'],
-        'habtm'  => [],
+        'habtm' => [],
         'json_object' => true
     ];
 
@@ -48,7 +48,7 @@ class AuditableBehavior extends Behavior
     {
         parent::initialize($config);
 
-        $habtm = $this->config('habtm');
+        $habtm = $this->getConfig('habtm');
 
         /*
          * Ensure that no HABTM models which are already auditable
@@ -58,23 +58,23 @@ class AuditableBehavior extends Behavior
 
         foreach ($habtm as $index => $modelName) {
 
-            $association = $this->_table->association($modelName);
+            $association = $this->_table->getAssociation($modelName);
 
-            if ( !$association instanceof  \Cake\ORM\Association\BelongsToMany ) {
+            if (!$association instanceof \Cake\ORM\Association\BelongsToMany) {
                 continue;
             }
 
-            if ( $this->_table->{$modelName}->hasBehavior('Auditable') ) {
+            if ($this->_table->{$modelName}->hasBehavior('Auditable')) {
                 unset($habtm[$index]);
             }
         }
-        $this->config('habtm', $habtm, false);
+        $this->setConfig('habtm', $habtm, false);
     }
 
     /**
      * Executed before a save() operation.
      *
-     * @param  Event  $event  Event
+     * @param  Event $event Event
      * @param  Entity $entity Entity to save
      *
      * @return null
@@ -85,7 +85,7 @@ class AuditableBehavior extends Behavior
             return;
         }
 
-        if ( !$entity->isNew() ) {
+        if (!$entity->isNew()) {
             $original = $this->_getModelData($entity);
             $this->_original = $original;
         }
@@ -94,7 +94,7 @@ class AuditableBehavior extends Behavior
     /**
      * Executed before a delete() operation.
      *
-     * @param  Event  $event  Event
+     * @param  Event $event Event
      * @param  Entity $entity Entity to save
      *
      * @return  null
@@ -113,7 +113,7 @@ class AuditableBehavior extends Behavior
     /**
      * Executed after a save operation completes.
      *
-     * @param  Event  $event  Event
+     * @param  Event $event Event
      * @param  Entity $entity Entity to save
      *
      * @return  void
@@ -127,8 +127,8 @@ class AuditableBehavior extends Behavior
         if (!$entity->isNew() && !$this->_shouldProcess('update')) {
             return;
         }
-        $alias = $this->_table->alias();
-        $config = $this->config();
+        $alias = $this->_table->getAlias();
+        $config = $this->getConfig();
 
         $audit = $this->_getModelData($entity);
 
@@ -171,22 +171,23 @@ class AuditableBehavior extends Behavior
                 continue;
             }
 
-            if ( is_object($value) && $this->_original[$property] == $value) {
+            if (is_object($value) && $this->_original[$property] == $value) {
                 continue;
             }
 
             $updates[] = [
                 'property_name' => $property,
-                'old_value'     => $this->_original[$property],
-                'new_value'     => $value
+                'old_value' => $this->_original[$property],
+                'new_value' => $value
             ];
         }
 
-        $Audits = TableRegistry::get('AuditLog.Audits');
+        $tableLocator = new TableLocator();
+        $Audits = $tableLocator->get('AuditLog.Audits');
         if ($entity->isNew() || count($updates)) {
             $audit = $Audits->newEntity($data);
             $audit = $Audits->save($audit);
-            if ( !$audit || !empty($audit->errors()) || empty($audit->id) ) {
+            if (!$audit || !empty($audit->getErrors()) || empty($audit->id)) {
                 throw new \UnexpectedValueException(
                     'Error saving audit ', print_r($audit, true)
                 );
@@ -210,7 +211,7 @@ class AuditableBehavior extends Behavior
 
             $delta = $Audits->AuditDeltas->newEntity($delta);
             $delta = $Audits->AuditDeltas->save($delta);
-            if ( !$delta || !empty($delta->errors()) || empty($delta->id) ) {
+            if (!$delta || !empty($delta->getErrors()) || empty($delta->id)) {
                 throw new \UnexpectedValueException(
                     'Error saving audit delta for ' . print_r($delta, true)
                 );
@@ -233,7 +234,7 @@ class AuditableBehavior extends Behavior
     /**
      * Executed after a model is deleted.
      *
-     * @param  Event  $event  Event
+     * @param  Event $event Event
      * @param  Entity $entity Entity to save
      *
      * @return  null
@@ -243,12 +244,12 @@ class AuditableBehavior extends Behavior
         if (!$this->_shouldProcess('delete')) {
             return;
         }
-        $config = $this->config();
+        $config = $this->getConfig();
 
         $source = $this->_getSource();
         $audit = $this->_original;
-        $alias = $this->_table->alias();
-        $data  = [
+        $alias = $this->_table->getAlias();
+        $data = [
             'event' => 'DELETE',
             'model' => $alias,
             'entity_id' => $entity->id,
@@ -261,7 +262,8 @@ class AuditableBehavior extends Behavior
         if ($config['json_object']) {
             $data['json_object'] = json_encode($audit);
         }
-        $Audits = TableRegistry::get('AuditLog.Audits');
+        $tableLocator = new TableLocator();
+        $Audits = $tableLocator->get('AuditLog.Audits');
         $audit = $Audits->newEntity($data);
         $Audits->save($audit);
 
@@ -279,7 +281,7 @@ class AuditableBehavior extends Behavior
      */
     protected function _shouldProcess($event)
     {
-        $on = $this->config('on');
+        $on = $this->getConfig('on');
         return in_array($event, $on);
     }
 
@@ -324,34 +326,34 @@ class AuditableBehavior extends Behavior
      */
     protected function _getModelData(Entity $entity)
     {
-        $habtm = $this->config('habtm');
-        $alias = $this->_table->alias();
-        $primaryKey = (array)$this->_table->primaryKey();
+        $habtm = $this->getConfig('habtm');
+        $alias = $this->_table->getAlias();
+        $primaryKey = (array)$this->_table->getPrimaryKey();
 
-        if ( empty($primaryKey) ) {
+        if (empty($primaryKey)) {
             throw new \UnexpectedValueException(
-                'Invalid primary key for ' . $this->_table->alias()
+                'Invalid primary key for ' . $this->_table->getAlias()
             );
         }
 
-        foreach ($primaryKey as $key ) {
+        foreach ($primaryKey as $key) {
             $conditions[$alias . '.' . $key] = $entity->$key;
         }
 
         $query = $this->_table->find('all', [
-            'conditions'    => $conditions,
+            'conditions' => $conditions,
         ]);
-        if ( !empty($habtm) ) {
+        if (!empty($habtm)) {
             $query->contain(array_values($habtm));
         }
 
-        $data = $query->hydrate(false)->first();
+        $data = $query->enableHydration(false)->first();
 
         $audit_data = !empty($data) ? $data : [];
 
         foreach ($habtm as $habtmModel) {
-            $association = $this->_table->association($habtmModel);
-            if ( !($association instanceof  \Cake\ORM\Association\BelongsToMany) ) {
+            $association = $this->_table->getAssociation($habtmModel);
+            if (!($association instanceof \Cake\ORM\Association\BelongsToMany)) {
                 continue;
             }
             $name = Inflector::underscore($habtmModel);
@@ -361,11 +363,12 @@ class AuditableBehavior extends Behavior
             }
 
             $joinData = [];
-            foreach ( $data[$name] as $info ) {
+            foreach ($data[$name] as $info) {
                 $joinData[$info['id']] = $info['_joinData'];
             }
             $audit_data[$name] = $joinData;
         }
         return $audit_data;
     }
+
 }

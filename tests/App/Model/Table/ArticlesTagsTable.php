@@ -18,9 +18,9 @@ class ArticlesTagsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('articles_tags');
-        $this->displayField('article_id');
-        $this->primaryKey(['article_id', 'tag_id']);
+        $this->setTable('articles_tags');
+        $this->setDisplayField('article_id');
+        $this->setPrimaryKey(['article_id', 'tag_id']);
         $this->belongsTo('Articles', [
             'foreignKey' => 'article_id',
             'joinType' => 'INNER',

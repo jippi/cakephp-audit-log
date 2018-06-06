@@ -1,9 +1,8 @@
 {
-  "name":"jippi/cakephp-audit-log",
-  "version": "1.0.0",
-  "description":"A logging plugin for CakePHP. It takes a snapshot of the fully hydrated object after a change is complete and it also records each individual change in the case of an update action",
-  "type":"cakephp-plugin",
-  "keywords":[
+  "name": "hevertonfreitas/cakephp-audit-log",
+  "description": "A logging plugin for CakePHP. It takes a snapshot of the fully hydrated object after a change is complete and it also records each individual change in the case of an update action",
+  "type": "cakephp-plugin",
+  "keywords": [
     "cakephp",
     "audit",
     "log",
@@ -11,29 +10,34 @@
     "logging",
     "plugin"
   ],
-  "homepage":"https://github.com/jippi/cakephp-audit-log",
-  "license":"MIT",
-  "authors":[
+  "homepage": "https://github.com/hevertonfreitas/cakephp-audit-log",
+  "license": "MIT",
+  "authors": [
     {
-      "name":"Christian Winther",
-      "role":"Author",
-      "homepage":"http://cakephp.nu/"
+      "name": "Christian Winther",
+      "role": "Author",
+      "homepage": "http://cakephp.nu/"
+    },
+    {
+      "name": "Heverton Coneglian",
+      "role": "Contributor",
+      "homepage": "https://www.hevertonfreitas.com.br/",
+      "email": "hevertonconeglian@gmail.com"
     }
   ],
-  "support":{
-    "source":"https://github.com/jippi/cakephp-audit-log",
-    "issues":"https://github.com/jippi/cakephp-audit-log/issues",
-    "irc":"irc://irc.freenode.org/friendsofcake"
+  "support": {
+    "source": "https://github.com/hevertonfreitas/cakephp-audit-log",
+    "issues": "https://github.com/hevertonfreitas/cakephp-audit-log/issues"
   },
-  "require":{
-    "php": ">=5.4.16",
-    "cakephp/cakephp": "~3.0",
-    "friendsofcake/search": "~1.0",
-    "friendsofcake/crud":"~4.0",
-    "phpspec/php-diff":"dev-master"
+  "require": {
+    "php": ">=5.6.0",
+    "cakephp/cakephp": "^3.6",
+    "cakephp/migrations": "^1.7",
+    "friendsofcake/search": "^4.4",
+    "phpspec/php-diff": "^1.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "*"
+    "phpunit/phpunit": "^5.7.14|^6.0"
   },
   "autoload": {
     "psr-4": {

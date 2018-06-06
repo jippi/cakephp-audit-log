@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \AuditLog\Model\Entity\AuditDelta[] $auditDeltas
+ */
+?>
 <div class="panel panel-default">
   <div class="panel-heading">
     <?= __('Audit Log')?>

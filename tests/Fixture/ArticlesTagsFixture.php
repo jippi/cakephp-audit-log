@@ -1,4 +1,5 @@
 <?php
+
 namespace AuditLog\Test\Fixture;
 
 use Cake\TestSuite\Fixture\TestFixture;
@@ -21,10 +22,6 @@ class ArticlesTagsFixture extends TestFixture
         'tag_id' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null, 'autoIncrement' => null],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['article_id', 'tag_id'], 'length' => []],
-        ],
-        '_options' => [
-            'engine' => 'InnoDB',
-            'collation' => 'latin1_swedish_ci'
         ],
     ];
     // @codingStandardsIgnoreEnd

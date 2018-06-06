@@ -1,4 +1,5 @@
 <?php
+
 namespace AuditLog\Test\Fixture;
 
 use Cake\TestSuite\Fixture\TestFixture;
@@ -25,10 +26,6 @@ class AuthorsFixture extends TestFixture
 
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],
-        ],
-        '_options' => [
-            'engine' => 'InnoDB',
-            'collation' => 'utf8_general_ci'
         ],
     ];
     // @codingStandardsIgnoreEnd

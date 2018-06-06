@@ -2,7 +2,9 @@
 
 namespace AuditLog\Test\App\Model\Table;
 
-class AuthorsTable extends \Cake\ORM\Table
+use Cake\ORM\Table;
+
+class AuthorsTable extends Table
 {
     /**
      * Initialize method
@@ -12,10 +14,10 @@ class AuthorsTable extends \Cake\ORM\Table
      */
     public function initialize(array $config)
     {
-        $this->addBehavior('AuditLog.Auditable');
-
         $this->hasMany('Articles', [
-            'foreignKey' => 'author_id'
+            'foreignKey' => 'author_id',
         ]);
+
+        $this->addBehavior('AuditLog.Auditable');
     }
 }

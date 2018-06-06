@@ -1,9 +1,11 @@
 <?php
+
+use Cake\Routing\Route\DashedRoute;
+use Cake\Routing\RouteBuilder;
 use Cake\Routing\Router;
 
-Router::plugin('AuditLog', function ($routes) {
-    $routes->prefix('admin', function ($routes) {
-        $routes->fallbacks('DashedRoute');
+Router::prefix('admin', function (RouteBuilder $routes) {
+    $routes->plugin('AuditLog', ['path' => '/audit-log'], function (RouteBuilder $routes) {
+        $routes->fallbacks(DashedRoute::class);
     });
-    $routes->fallbacks('DashedRoute');
 });

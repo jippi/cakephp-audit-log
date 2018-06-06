@@ -1,0 +1,6 @@
+/vendor/
+/tmp/
+/composer.lock
+/.idea/
+/config/Migrations/schema-dump-default.lock
+/error.log

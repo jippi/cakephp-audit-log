@@ -1,70 +1,72 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \AuditLog\Model\Entity\Audit $audit
+ */
+?>
+
 <div class="panel panel-default">
-  <div class="panel-heading">
-    <?= __('Audit Log')?>
-  </div>
-  <div class="panel-body">
-    <dl class="dl-horizontal">
-        <dt><?= __('Id'); ?></dt>
-        <dd><?= h($audit->id)?></dd>
+    <div class="panel-heading">
+        <?php echo __('Audit Log') ?>
+    </div>
+    <div class="panel-body">
+        <dl class="dl-horizontal">
+            <dt><?php echo __('Id'); ?></dt>
+            <dd><?php echo h($audit->id) ?></dd>
 
-        <dt><?= __('Event type'); ?></dt>
-        <dd><?= h($audit->event)?></dd>
+            <dt><?php echo __('Event type'); ?></dt>
+            <dd><?php echo h($audit->event) ?></dd>
 
-        <dt><?= __('Model'); ?></dt>
-        <dd><?= h($audit->model)?></dd>
+            <dt><?php echo __('Model'); ?></dt>
+            <dd><?php echo h($audit->model) ?></dd>
 
-        <dt><?= __('Model id'); ?></dt>
-        <dd><?= h($audit->entity_id)?></dd>
+            <dt><?php echo __('Model id'); ?></dt>
+            <dd><?php echo h($audit->entity_id) ?></dd>
 
-        <dt><?= __('Description'); ?></dt>
-        <dd><?= h($audit->description)?></dd>
+            <dt><?php echo __('Description'); ?></dt>
+            <dd><?php echo h($audit->description) ?></dd>
 
-        <dt><?= __('Source Id'); ?></dt>
-        <dd><?= h($audit->source_id)?></dd>
+            <dt><?php echo __('Source Id'); ?></dt>
+            <dd><?php echo h($audit->source_id) ?></dd>
 
-        <dt><?= __('Source Ip'); ?></dt>
-        <dd><?= h($audit->source_ip)?></dd>
+            <dt><?php echo __('Source Ip'); ?></dt>
+            <dd><?php echo h($audit->source_ip) ?></dd>
 
-        <dt><?= __('Source Url'); ?></dt>
-        <dd><?= h($audit->source_url)?></dd>
+            <dt><?php echo __('Source Url'); ?></dt>
+            <dd><?php echo h($audit->source_url) ?></dd>
 
-        <dt><?= __('Deltas'); ?></dt>
-        <dd><?=
-            $this->Number->format($audit->delta_count)
-        ?></dd>
+            <dt><?php echo __('Deltas'); ?></dt>
+            <dd><?php echo
+                $this->Number->format($audit->delta_count)
+                ?></dd>
 
-        <dt><?= __('Created'); ?></dt>
-        <dd><?= $audit->created?></dd>
-    </dl>
-  </div>
+            <dt><?php echo __('Created'); ?></dt>
+            <dd><?php echo $audit->created ?></dd>
+        </dl>
+    </div>
 </div>
 
 <div class="panel panel-default">
-  <div class="panel-heading">
-    <i class="halflings-icon list"></i><span class="break"></span><?= __('Categorize Logs'); ?>
-  </div>
-  <div class="panel-body">
-     <?php if (!empty($audit->audit_deltas)): ?>
-    <dl class="dl-horizontal">
-
-        </tr>
-        <?php foreach ($audit->audit_deltas as $auditDeltas): ?>
-        <dt><?= __('Field'); ?></dt>
-        <dd><?=
-            h($auditDeltas->property_name)
-        ?></dd>
-
-        <dt><?= __('Diff') ?></dt>
-        <dd><?= $this->AuditLog->getDiff(
-                $auditDeltas->property_name,
-                $auditDeltas->old_value,
-                $auditDeltas->new_value
-            ) ?>
-        </dd>
-        <?php endforeach; ?>
-    </dl>
-    <?php endif; ?>
-  </div>
+    <div class="panel-heading">
+        <i class="halflings-icon list"></i><span class="break"></span><?php echo __('Categorize Logs'); ?>
+    </div>
+    <div class="panel-body">
+        <?php if (!empty($audit->audit_deltas)): ?>
+            <dl class="dl-horizontal">
+                <?php foreach ($audit->audit_deltas as $auditDeltas): ?>
+                    <dt><?php echo __('Field'); ?></dt>
+                    <dd><?php echo h($auditDeltas->property_name) ?></dd>
+                    <dt><?php echo __('Diff') ?></dt>
+                    <dd><?php echo $this->AuditLog->getDiff(
+                            $auditDeltas->property_name,
+                            $auditDeltas->old_value,
+                            $auditDeltas->new_value
+                        ) ?>
+                    </dd>
+                <?php endforeach; ?>
+            </dl>
+        <?php endif; ?>
+    </div>
 </div>
 <style type="text/css">
     del {
@@ -126,4 +128,4 @@
         width: 48%;
     }
 
-    </style>
+</style>

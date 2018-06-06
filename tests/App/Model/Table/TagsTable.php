@@ -1,10 +1,8 @@
 <?php
+
 namespace AuditLog\Test\App\Model\Table;
 
-use Cake\ORM\Query;
-use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
-use Cake\Validation\Validator;
 
 /**
  * Tags Model
@@ -20,14 +18,14 @@ class TagsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('tags');
-        $this->displayField('title');
-        $this->primaryKey('id');
+        $this->setTable('tags');
+        $this->setDisplayField('title');
+        $this->setPrimaryKey('id');
         $this->addBehavior('Timestamp');
         $this->belongsToMany('Articles', [
             'foreignKey' => 'tag_id',
             'targetForeignKey' => 'article_id',
-            'joinTable' => 'articles_tags'
+            'joinTable' => 'articles_tags',
         ]);
     }
 }

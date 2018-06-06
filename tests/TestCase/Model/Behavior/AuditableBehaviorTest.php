@@ -1,10 +1,10 @@
 <?php
+
 namespace AuditLog\Test\TestCase\Model\Behavior;
 
-use AuditLog\Model\Behavior\AuditableBehavior;
+use Cake\ORM\Locator\TableLocator;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
-use Cake\Utility\Hash;
 
 /**
  * AuditLog\Model\Behavior\AuditableBehavior Test Case
@@ -26,20 +26,37 @@ class AuditableBehaviorTest extends TestCase
     ];
 
     /**
+     * @var \AuditLog\Test\App\Model\Table\ArticlesTable
+     */
+    public $Articles;
+
+    /**
+     * @var \AuditLog\Test\App\Model\Table\AuthorsTable
+     */
+    public $Authors;
+
+    /**
+     * @var \AuditLog\Test\App\Model\Table\TagsTable
+     */
+    public $Tags;
+
+    /**
      * setUp method
      *
      * @return void
      */
     public function setUp()
     {
-        $this->Articles = TableRegistry::get('Articles', [
-            'className' => 'AuditLog\Test\App\Model\Table\ArticlesTable'
+        $tableLocator = new TableLocator();
+
+        $this->Articles = $tableLocator->get('Articles', [
+            'className' => 'AuditLog\Test\App\Model\Table\ArticlesTable',
         ]);
-        $this->Authors = TableRegistry::get('Authors', [
-            'className' => 'AuditLog\Test\App\Model\Table\AuthorsTable'
+        $this->Authors = $tableLocator->get('Authors', [
+            'className' => 'AuditLog\Test\App\Model\Table\AuthorsTable',
         ]);
-        $this->Tags = TableRegistry::get('Tags', [
-            'className' => 'AuditLog\Test\App\Model\Table\TagsTable'
+        $this->Tags = $tableLocator->get('Tags', [
+            'className' => 'AuditLog\Test\App\Model\Table\TagsTable',
         ]);
 
         parent::setUp();
@@ -52,8 +69,7 @@ class AuditableBehaviorTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Articles, $this->Authors);
-        TableRegistry::clear();
+        unset($this->Articles, $this->Authors, $this->Tags);
         parent::tearDown();
     }
 
@@ -66,10 +82,10 @@ class AuditableBehaviorTest extends TestCase
     public function testCreate()
     {
         $new_article = $this->Articles->newEntity([
-            'user_id'   => 1,
+            'user_id' => 1,
             'author_id' => 1,
-            'title'     => 'First Test Article',
-            'body'      => 'First Test Article Body',
+            'title' => 'First Test Article',
+            'body' => 'First Test Article Body',
             'published' => 'N',
         ]);
 
@@ -77,12 +93,13 @@ class AuditableBehaviorTest extends TestCase
         $this->assertNotEquals($result, false);
         $this->assertNotNull($new_article->id);
 
-        $audit = TableRegistry::get('AuditLog.Audits')->find('all', [
-            'conditions'        => [
-                'event'     => 'CREATE',
-                'model'     => 'Articles',
-                'entity_id' => $new_article->id
-            ]
+        $tableLocator = new TableLocator();
+        $audit = $tableLocator->get('AuditLog.Audits')->find('all', [
+            'conditions' => [
+                'event' => 'CREATE',
+                'model' => 'Articles',
+                'entity_id' => $new_article->id,
+            ],
         ])->firstOrFail();
 
         $this->assertEquals('15', $audit->source_id);
@@ -92,9 +109,9 @@ class AuditableBehaviorTest extends TestCase
 
         $article = json_decode($audit->json_object, true);
 
-        $deltas = TableRegistry::get('AuditLog.AuditDeltas')->find('all', [
+        $deltas = $tableLocator->get('AuditLog.AuditDeltas')->find('all', [
             'conditions' => [
-                'AuditDeltas.audit_id' => $audit->id
+                'AuditDeltas.audit_id' => $audit->id,
             ],
         ])->toArray();
 
@@ -116,9 +133,9 @@ class AuditableBehaviorTest extends TestCase
     {
         # TEST A MODEL AND A SINGLE ASSOCIATED MODEL
         $data = [
-            'user_id'   => 1,
-            'title'     => 'Rob\'s Test Article',
-            'body'      => 'Rob\'s Test Article Body',
+            'user_id' => 1,
+            'title' => 'Rob\'s Test Article',
+            'body' => 'Rob\'s Test Article Body',
             'published' => 'Y',
             'author' => [
                 'first_name' => 'Rob',
@@ -127,25 +144,26 @@ class AuditableBehaviorTest extends TestCase
             'tags' => [
                 ['id' => 1],
                 ['title' => 'news'],
-                ['title' => 'test']
-            ]
+                ['title' => 'test'],
+            ],
         ];
         $entity = $this->Articles->newEntity($data, [
             'associated' => [
                 'Authors',
-                'Tags'
-            ]
+                'Tags',
+            ],
         ]);
 
         $this->Articles->save($entity);
 
-        $article_audit = TableRegistry::get('AuditLog.Audits')->find('all', [
+        $tableLocator = new TableLocator();
+        $article_audit = $tableLocator->get('AuditLog.Audits')->find('all', [
             'conditions' => [
-                'Audits.event'     => 'CREATE',
-                'Audits.model'     => 'Articles',
-                'Audits.entity_id' => $entity->id
+                'Audits.event' => 'CREATE',
+                'Audits.model' => 'Articles',
+                'Audits.entity_id' => $entity->id,
             ],
-            'contain' => ['AuditDeltas']
+            'contain' => ['AuditDeltas'],
         ])->firstOrFail()->toArray();
         $article = json_decode($article_audit['json_object'], true);
 
@@ -157,29 +175,29 @@ class AuditableBehaviorTest extends TestCase
         $this->assertEquals([
             1 => [
                 'tag_id' => 1,
-                'article_id' => 4
+                'article_id' => 4,
             ],
             2 => [
                 'tag_id' => 2,
-                'article_id' => 4
+                'article_id' => 4,
             ],
             3 => [
                 'tag_id' => 3,
-                'article_id' => 4
-            ]
+                'article_id' => 4,
+            ],
         ], $article['tags']);
 
         # Verify that no delta record was created.
 
         $this->assertTrue(empty($article_audit['audit_deltas']));
 
-        $author_audit = TableRegistry::get('AuditLog.Audits')->find('all', [
+        $author_audit = $tableLocator->get('AuditLog.Audits')->find('all', [
             'conditions' => [
-                'Audits.event'     => 'CREATE',
-                'Audits.model'     => 'Authors',
-                'Audits.entity_id' => $entity->author->id
+                'Audits.event' => 'CREATE',
+                'Audits.model' => 'Authors',
+                'Audits.entity_id' => $entity->author->id,
             ],
-            'contain' => ['AuditDeltas']
+            'contain' => ['AuditDeltas'],
         ])->firstOrFail();
 
         $author = json_decode($author_audit['json_object'], true);
@@ -192,6 +210,7 @@ class AuditableBehaviorTest extends TestCase
         $this->assertTrue(empty($author_audit['audit_deltas']));
 
     }
+
     /**
      * Test saving multiple data
      *
@@ -204,26 +223,26 @@ class AuditableBehaviorTest extends TestCase
 
         $data = [
             [
-                'user_id'   => 1,
+                'user_id' => 1,
                 'author_id' => 1,
-                'title'     => 'Multiple Save 1 Title',
-                'body'      => 'Multiple Save 1 Body',
+                'title' => 'Multiple Save 1 Title',
+                'body' => 'Multiple Save 1 Body',
                 'published' => 'Y',
 
             ],
             [
-                'user_id'       => 2,
-                'author_id'     => 2,
-                'title'         => 'Multiple Save 2 Title',
-                'body'          => 'Multiple Save 2 Body',
-                'published'     => 'N',
+                'user_id' => 2,
+                'author_id' => 2,
+                'title' => 'Multiple Save 2 Title',
+                'body' => 'Multiple Save 2 Body',
+                'published' => 'N',
                 'ignored_field' => 1,
             ],
             [
-                'user_id'   => 3,
+                'user_id' => 3,
                 'author_id' => 3,
-                'title'     => 'Multiple Save 3 Title',
-                'body'      => 'Multiple Save 3 Body',
+                'title' => 'Multiple Save 3 Title',
+                'body' => 'Multiple Save 3 Body',
                 'published' => 'Y',
             ],
         ];
@@ -232,17 +251,18 @@ class AuditableBehaviorTest extends TestCase
             $this->Articles->save($entity);
         }
 
+        $tableLocator = new TableLocator();
         # Retrieve the audits for the last 3 articles saved
-        $audits = TableRegistry::get('AuditLog.Audits')->find('all', [
+        $audits = $tableLocator->get('AuditLog.Audits')->find('all', [
             'conditions' => [
-              'Audits.event'     => 'CREATE',
-              'Audits.model'     => 'Articles',
+                'Audits.event' => 'CREATE',
+                'Audits.model' => 'Articles',
             ],
             'order' => [
-                'Audits.entity_id' => 'DESC'
+                'Audits.entity_id' => 'DESC',
             ],
             'limit' => 3,
-            'contain' => ['AuditDeltas']
+            'contain' => ['AuditDeltas'],
         ])->all()->toArray();
 
         $article_1 = json_decode($audits[2]['json_object'], true);
@@ -277,16 +297,17 @@ class AuditableBehaviorTest extends TestCase
      */
     public function testEdit()
     {
-        $this->Audit      = TableRegistry::get('AuditLog.Audits');
-        $this->AuditDelta = TableRegistry::get('AuditLog.AuditDeltas');
+        $tableLocator = new TableLocator();
+        $this->Audit = $tableLocator->get('AuditLog.Audits');
+        $this->AuditDelta = $tableLocator->get('AuditLog.AuditDeltas');
 
         $new_article = $this->Articles->newEntity([
-            'user_id'       => 1,
-            'author_id'     => 1,
-            'title'         => 'First Test Article',
-            'body'          => 'First Test Article Body',
+            'user_id' => 1,
+            'author_id' => 1,
+            'title' => 'First Test Article',
+            'body' => 'First Test Article Body',
             'ignored_field' => 1,
-            'published'     => 'N',
+            'published' => 'N',
         ]);
 
         # TEST SAVE WITH SINGLE PROPERTY UPDATE
@@ -302,19 +323,19 @@ class AuditableBehaviorTest extends TestCase
         $audit_records = $this->Audit->find('all', [
             'conditions' => [
                 'Audits.model' => 'Articles',
-                'Audits.entity_id' => $new_article->id
-            ]
+                'Audits.entity_id' => $new_article->id,
+            ],
         ])->all();
 
         $auditsIds = $audit_records->extract('id')->toArray();
 
         $delta_records = $this->AuditDelta->find('all', [
             'conditions' => [
-                'AuditDeltas.audit_id IN' => $auditsIds
+                'AuditDeltas.audit_id IN' => $auditsIds,
             ],
         ])->all()->toArray();
 
-        $count = $audit_records->countBy(function($item) {
+        $count = $audit_records->countBy(function ($item) {
             return $item->event;
         })->toArray();
 
@@ -337,24 +358,24 @@ class AuditableBehaviorTest extends TestCase
         # This also allows us to retrieve the last edit for the next set
         # of tests.
         $anotherArticle = $this->Articles->newEntity([
-            'user_id'       => 1,
-            'author_id'     => 1,
-            'title'         => 'Second Test Article',
-            'body'          => 'Second Test Article Body',
+            'user_id' => 1,
+            'author_id' => 1,
+            'title' => 'Second Test Article',
+            'body' => 'Second Test Article Body',
             'ignored_field' => 1,
-            'published'     => 'N',
+            'published' => 'N',
         ]);
         $result = $this->Articles->save($anotherArticle);
         $this->assertNotEquals($result, false);
         $this->assertNotNull($anotherArticle->id);
         $articleId = $anotherArticle->id;
         $this->Articles->patchEntity($anotherArticle, [
-            'user_id'       => 1,
-            'author_id'     => 1,
-            'title'         => 'Second Test Article (Newly Edited)',
-            'body'          => 'Second Test Article Body (Also Edited)',
+            'user_id' => 1,
+            'author_id' => 1,
+            'title' => 'Second Test Article (Newly Edited)',
+            'body' => 'Second Test Article Body (Also Edited)',
             'ignored_field' => 0,
-            'published'     => 'Y',
+            'published' => 'Y',
         ]);
 
         $result = $this->Articles->save($anotherArticle);
@@ -364,8 +385,8 @@ class AuditableBehaviorTest extends TestCase
 
         $last_audit = $this->Audit->find('all', [
             'conditions' => [
-                'event'     => 'EDIT',
-                'model'     => 'Articles',
+                'event' => 'EDIT',
+                'model' => 'Articles',
                 'entity_id' => $articleId,
             ],
             'contain' => [
@@ -373,15 +394,15 @@ class AuditableBehaviorTest extends TestCase
                     'strategy' => 'select',
                     'queryBuilder' => function ($q) {
                         return $q->order([
-                            'AuditDeltas.property_name ' =>'ASC'
+                            'AuditDeltas.property_name ' => 'ASC',
                         ]);
-                    }
-                ]
+                    },
+                ],
             ],
             'order' => 'Audits.created DESC',
         ])->firstOrFail();
         $this->assertEquals(3, count($last_audit->audit_deltas));
-        $actual = array_map(function($item) {
+        $actual = array_map(function ($item) {
             return [
                 'property_name' => $item->property_name,
                 'old_value' => $item->old_value,
@@ -394,17 +415,17 @@ class AuditableBehaviorTest extends TestCase
             [
                 'property_name' => 'body',
                 'old_value' => 'Second Test Article Body',
-                'new_value' => 'Second Test Article Body (Also Edited)'
+                'new_value' => 'Second Test Article Body (Also Edited)',
             ],
             [
                 'property_name' => 'published',
                 'old_value' => 'N',
-                'new_value' => 'Y'
+                'new_value' => 'Y',
             ],
             [
                 'property_name' => 'title',
                 'old_value' => 'Second Test Article',
-                'new_value' => 'Second Test Article (Newly Edited)'
+                'new_value' => 'Second Test Article (Newly Edited)',
             ],
         ];
         $this->assertEquals($expected, $actual);
@@ -417,16 +438,17 @@ class AuditableBehaviorTest extends TestCase
      */
     public function testIgnoredField()
     {
-        $this->Audit      = TableRegistry::get('AuditLog.Audits');
-        $this->AuditDelta = TableRegistry::get('AuditLog.AuditDeltas');
+        $tableLocator = new TableLocator();
+        $this->Audit = $tableLocator->get('AuditLog.Audits');
+        $this->AuditDelta = $tableLocator->get('AuditLog.AuditDeltas');
 
         $new_article = $this->Articles->newEntity([
-            'user_id'       => 1,
-            'author_id'     => 1,
-            'title'         => 'First Test Article',
-            'body'          => 'First Test Article Body',
+            'user_id' => 1,
+            'author_id' => 1,
+            'title' => 'First Test Article',
+            'body' => 'First Test Article Body',
             'ignored_field' => 1,
-            'published'     => 'N',
+            'published' => 'N',
         ]);
 
         # TEST NO AUDIT RECORD IF ONLY CHANGE IS IGNORED FIELD
@@ -441,11 +463,11 @@ class AuditableBehaviorTest extends TestCase
         $this->assertNotEquals($result, false);
 
         $last_audit = $this->Audit->find('all', [
-            'contain'    => ['AuditDeltas'],
+            'contain' => ['AuditDeltas'],
             'conditions' => [
-              'Audits.event'     => 'EDIT',
-              'Audits.model'     => 'Articles',
-              'Audits.entity_id' => $articleId
+                'Audits.event' => 'EDIT',
+                'Audits.model' => 'Articles',
+                'Audits.entity_id' => $articleId,
             ],
             'order' => 'Audits.created DESC',
         ]);
@@ -460,10 +482,11 @@ class AuditableBehaviorTest extends TestCase
      */
     public function testDelete()
     {
-        $this->Audit      = TableRegistry::get('AuditLog.Audits');
-        $this->AuditDelta = TableRegistry::get('AuditLog.AuditDeltas');
+        $tableLocator = new TableLocator();
+        $this->Audit = $tableLocator->get('AuditLog.Audits');
+        $this->AuditDelta = $tableLocator->get('AuditLog.AuditDeltas');
         $article = $this->Articles->find('all', [
-            'order'   => array('rand()'),
+            'order' => ['rand()'],
         ])->first();
 
         $id = $article->id;
@@ -472,11 +495,11 @@ class AuditableBehaviorTest extends TestCase
 
         $last_audit = $this->Audit->find('all', [
             //'contain'    => array('AuditDelta'), <-- What does this solve?
-            'conditions' => array(
-              'Audits.event'     => 'DELETE',
-              'Audits.model'     => 'Articles',
-              'Audits.entity_id' => $id,
-            ),
+            'conditions' => [
+                'Audits.event' => 'DELETE',
+                'Audits.model' => 'Articles',
+                'Audits.entity_id' => $id,
+            ],
             'order' => 'Audits.created DESC',
         ])->all();
         $this->assertEquals(1, count($last_audit));
